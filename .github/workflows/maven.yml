@@ -1,0 +1,42 @@
+name: OpenCart Automated Regression
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: # Enables manual trigger button in GitHub UI
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run OpenCart Tests with Virtual Display (xvfb)
+        working-directory: automation
+        run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" mvn clean test
+
+      - name: Upload Extent HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Extent-Automation-Report
+          path: automation/test-output/SparkReport/
+
+      - name: Upload Cucumber HTML Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cucumber-Reports
+          path: automation/target/cucumber-reports.html
