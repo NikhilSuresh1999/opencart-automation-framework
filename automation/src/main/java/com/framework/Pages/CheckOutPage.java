@@ -57,11 +57,23 @@ public class CheckOutPage {
         ele.type(cityInput, faker.address().city());
         ele.type(postcodeInput, faker.address().zipCode());
         
-        ele.selectByVisibleText(countryDropdown, country);
-        ele.waitForAjaxToComplete(); 
-        ele.selectByVisibleText(zoneDropdown, zone);
+        if (country != null && !country.isEmpty()) {
+            ele.selectByVisibleText(countryDropdown, country);
+            ele.waitForOptionPresent(zoneDropdown, zone);
+            ele.selectByVisibleText(zoneDropdown, zone);
+        }
         
         ele.click(step2ContinueBtn);
+    }
+
+    public void submitEmptyBillingDetails() {
+        ele.waitForAjaxToComplete();
+        ele.click(step2ContinueBtn);
+    }
+
+    public boolean isAddressErrorDisplayed() {
+        ele.waitForAjaxToComplete();
+        return ele.isElementDisplayed(By.cssSelector("div.text-danger, .alert-danger"));
     }
 
     public void selectShippingMethod(String method) {

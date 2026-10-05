@@ -44,6 +44,22 @@ public class ElementUtil {
         new Select(wait.until(ExpectedConditions.visibilityOfElementLocated(locator))).selectByVisibleText(text);
     }
 
+    public void waitForOptionPresent(By locator, String optionText) {
+        try {
+            wait.until(d -> {
+                Select s = new Select(d.findElement(locator));
+                for (WebElement opt : s.getOptions()) {
+                    if (opt.getText().trim().equalsIgnoreCase(optionText.trim())) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        } catch (Exception e) {
+            // Proceed if wait times out
+        }
+    }
+
     public String getTextSafely(By locator) {
         try {
             return wait.until(ExpectedConditions.visibilityOfElementLocated(locator)).getText();

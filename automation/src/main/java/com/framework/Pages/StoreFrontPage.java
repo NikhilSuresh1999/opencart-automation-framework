@@ -27,12 +27,13 @@ public class StoreFrontPage {
 
     // Search & Grid Locators
     private By searchBox = By.name("search");
-    private By searchBtn = By.xpath("//button[contains(@class, 'btn-default')]");
+    private By searchBtn = By.cssSelector("#search button");
     private By productTitles = By.cssSelector("div.product-layout h4 a");
     private By emptySearchMsg = By.xpath("//p[contains(text(), 'There is no product')]");
 
     // Cart Locators
     private By addToCartBtn = By.xpath("(//button[contains(@onclick, 'cart.add')])[1]");
+    private By productAddToCartBtn = By.id("button-cart");
     private By cartTotalBtn = By.id("cart-total");
 
     public StoreFrontPage(WebDriver driver) {
@@ -75,7 +76,22 @@ public class StoreFrontPage {
         return ele.getTextSafely(productTitles);
     }
 
-   public void addToCartDynamic(String product, String qty) {
+    public void addInStockProductToCart() {
+        driver.get("https://tutorialsninja.com/demo/index.php?route=product/product&product_id=47");
+        ele.click(productAddToCartBtn);
+        ele.isElementDisplayed(successAlert);
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addToCartDynamic(String product, String qty) {
+        if (product.equalsIgnoreCase("HP LP3065") || product.equalsIgnoreCase("in-stock")) {
+            addInStockProductToCart();
+            return;
+        }
         searchProduct(product);
         ele.click(addToCartBtn);
         

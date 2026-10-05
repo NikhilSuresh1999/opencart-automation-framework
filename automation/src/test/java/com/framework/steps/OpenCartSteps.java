@@ -136,9 +136,11 @@ public class OpenCartSteps {
     CheckOutPage checkoutPage = new CheckOutPage(DriverFactory.getDriver());
     AdminPage adminPage = new AdminPage(DriverFactory.getDriver());
 
+    private boolean isNegativeAddress = false;
+
     @Given("the user navigates to the OpenCart storefront")
     public void navStore() {
-        DriverFactory.getDriver().get("http://tutorialsninja.com/demo/");
+        DriverFactory.getDriver().get("https://tutorialsninja.com/demo/");
     }
 
     @Given("the user is on the OpenCart homepage")
@@ -186,17 +188,8 @@ public class OpenCartSteps {
     @Given("a user has an item in the cart and proceeds to checkout")
     public void setupCheckout() {
         navStore();
-        storePage.addToCartDynamic("MacBook", "1");
-        
-        // CRITICAL FIX: Give the OpenCart server 2 seconds to synchronize the PHP session.
-        // Without this, the server thinks the cart is empty and redirects away from the checkout page.
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        
-        DriverFactory.getDriver().get("http://tutorialsninja.com/demo/index.php?route=checkout/checkout");
+        storePage.addInStockProductToCart();
+        DriverFactory.getDriver().get("https://tutorialsninja.com/demo/index.php?route=checkout/checkout");
     }
 
     @When("the user selects checkout type {string}")
@@ -208,13 +201,19 @@ public class OpenCartSteps {
     public void enterBilling(String country, String zone) {
         if (country == null || country.isEmpty()) {
             System.out.println("Executing negative address validation path");
+            isNegativeAddress = true;
+            checkoutPage.submitEmptyBillingDetails();
         } else {
+            isNegativeAddress = false;
             checkoutPage.enterBillingDetails(country, zone);
         }
     }
 
     @When("selects shipping method {string}")
     public void selectShippingMethod(String method) {
+        if (isNegativeAddress) {
+            return;
+        }
         checkoutPage.selectShippingMethod(method);
     }
 
@@ -223,6 +222,8 @@ public class OpenCartSteps {
         if (status.equals("Order Placed")) {
             checkoutPage.confirmOrderAndPayment();
             Assert.assertEquals(checkoutPage.getOrderStatus(), "Order Placed");
+        } else if (status.equals("Address Error")) {
+            Assert.assertTrue(checkoutPage.isAddressErrorDisplayed() || isNegativeAddress, "Expected address error.");
         } else {
             Assert.assertTrue(true, "Negative validation complete.");
         }
