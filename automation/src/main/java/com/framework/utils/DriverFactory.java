@@ -58,14 +58,19 @@ public class DriverFactory {
                 options.addArguments("--disable-blink-features=AutomationControlled");
                 options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
                 options.addArguments("--incognito", "--window-size=1920,1080", "--disable-notifications");
-                // Uncomment the line below to run in headless mode in CI/CD pipelines
-                // options.addArguments("--headless=new");
+                options.setPageLoadStrategy(org.openqa.selenium.PageLoadStrategy.EAGER);
+                options.addArguments("--disable-gpu", "--dns-prefetch-disable", "--no-first-run", "--no-default-browser-check");
+                options.addArguments("--blink-settings=imagesEnabled=false", "--disable-dev-shm-usage", "--no-sandbox");
+                String headless = System.getProperty("headless", "true");
+                if ("true".equalsIgnoreCase(headless)) {
+                    options.addArguments("--headless=new");
+                }
                 tlDriver.set(new ChromeDriver(options));
                 break;
         }
 
-        getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
-        getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
+        getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(4));
+        getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(45));
         return getDriver();
     }
 

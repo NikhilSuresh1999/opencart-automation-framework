@@ -60,6 +60,19 @@ public class ElementUtil {
         }
     }
 
+    public void selectByValue(By locator, String value) {
+        new Select(wait.until(ExpectedConditions.visibilityOfElementLocated(locator))).selectByValue(value);
+    }
+
+    public void scrollToElement(By locator) {
+        try {
+            WebElement el = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", el);
+        } catch (Exception e) {
+            // Ignored
+        }
+    }
+
     public String getTextSafely(By locator) {
         try {
             return wait.until(ExpectedConditions.visibilityOfElementLocated(locator)).getText();
@@ -83,5 +96,4 @@ public class ElementUtil {
             // Spinner not present or already disappeared
         }
     }
-
 }
